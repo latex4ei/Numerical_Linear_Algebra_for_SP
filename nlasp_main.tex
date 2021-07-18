@@ -572,6 +572,9 @@ r_{11} & r_{12} & \cdots r_{1n} \\
 \begin{sectionbox}
 \includegraphics[width=\textwidth]{img/algo9_R_inverse.png}\\
 \textbf{Operation Count Algorithm $9$}: \#FLOPS $=\mathcal{O}(\frac{1}{3}n^3)$\\
+
+\#FLOPS$=\sum_{j=1}^{n}\sum_{i=1}^{j}(2j-2i+1)$\\
+$=\sum_{j=1}^{n}[2j^2-j(j+1)+j] = \frac{(2n+1)(n+1)n}{6}$
 \end{sectionbox}
 
 \section{Least Squares}
@@ -771,7 +774,158 @@ $$\kappa_\text{N}(\mathbf{A}\mathbf{x}, \mathbf{x}) = \frac{\parallel\mathbf{A}\
 $$\kappa(\mathbf{U}) = \parallel\mathbf{U}\parallel\cdot\parallel \mathbf{U}^\text{H}\parallel = 1$$
 \end{sectionbox}
 \section{Stability of an Algorithm}
+\begin{sectionbox}
+The algorithm $\mathbf{\tilde{f}}(\mathbf{x})$ to solve a problem $\mathbf{f}(\mathbf{x})$ is denoted as
 
+$$\mathbf{\tilde{f}}: \mathbb{C}^m \to \mathbb{C}^n; \mathbf{x}\to \tilde{\mathbf{y}} = \mathbf{\tilde{f}}$$
+
+\subsection{Accuracy}
+For any possible value for the input $\mathbf{x}$, the relative error of the outcome $\mathbf{\tilde{f}}(\mathbf{x})$ of the algorithm is in the order of $\epsilon_M$, which is the least error to be expected.
+$$\forall \mathbf{x}\in\mathbb{C}^{m}:\frac{\parallel \mathbf{\tilde{f}}(\mathbf{x}) -\mathbf{f}(\mathbf{x})\parallel}{\parallel\mathbf{f}(\mathbf{x}) \parallel} = \mathcal{O}(\epsilon_\text{M})$$
+
+\subsection{Stability}
+An algorithm $\tilde{\mathbf{f}}$ is stable, if
+$$\forall \mathbf{x} \in \mathbb{C}^{m}: \exists \mathbf{\tilde{x}} \text{ with } \frac{\parallel \mathbf{\tilde{x}} - \mathbf{x}\parallel}{\parallel \mathbf{x}\parallel} = \mathcal{O}(\epsilon_\text{M})$$
+such that
+$$\frac{\parallel \mathbf{\tilde{f}}(\mathbf{x}) -\mathbf{f}(\mathbf{\tilde{x}})\parallel}{\parallel\mathbf{f}(\mathbf{\tilde{x}}) \parallel} = \mathcal{O}(\epsilon_\text{M})$$
+\textbf{It is not possible to infer the accuracy of an algorithm from the observation that it is stable}. 
+
+\subsection{Backward Stability}
+An algorithm $\tilde{\mathbf{f}}$ is backward stable, if
+$$\forall \mathbf{x} \in \mathbb{C}^{m}: \exists \mathbf{\tilde{x}} \text{ with } \frac{\parallel \mathbf{\tilde{x}} - \mathbf{x}\parallel}{\parallel \mathbf{x}\parallel} = \mathcal{O}(\epsilon_\text{M})$$
+such that
+$$\tilde{\mathbf{f}}(\mathbf{x}) = \mathbf{f}(\tilde{\mathbf{x}})$$
+
+This definition of backward stability is stronger than the definition of stability before, since the relative error between the output of the algorithm for the true input $\mathbf{x}$, i.e., $\tilde{\mathbf{f}}(\mathbf{x})$, and the output of the underlying problem $\mathbf{f}(\tilde{\mathbf{x}})$ for the perturbed input $\tilde{\mathbf{x}}$ most be zero. \textbf{Backward stability implies stability}.
+
+$$\frac{\parallel \mathbf{\tilde{f}}(\mathbf{x}) -\mathbf{f}(\mathbf{x})\parallel}{\parallel\mathbf{f}(\mathbf{x}) \parallel} = \mathcal{O}(\kappa_\text{N}(\mathbf{f},\mathbf{x})\epsilon_\text{M})$$
+\end{sectionbox}
+
+\section{System of Equations}
+\begin{sectionbox}
+$$\mathbf{A} = \mathbf{L}\mathbf{U}$$
+with the unit lower-triangular $\mathbf{L} \in\mathbb{C}^{m\times m}$ and the upper-triangular $\mathbf{U}\in\mathbb{C}^{m\times m}$
+The coefficients for $\mathbf{L}$ are given as  $l_{i,j} = \frac{a_{ij}}{ajj}$
+
+$$\mathbf{L} = \mathbf{I}+\mathbf{l}_1\mathbf{e}^\text{T}_1+\cdots\mathbf{l}_{m-1}e^\text{T}_{m-1}$$
+$$=\begin{bmatrix}
+1 & & & &\\
+l_{21} & 1 & & &\\
+\vdots & \ddots & \ddots & & \\
+l_{m,1} & \cdots & l_{m,m-1} & 1
+\end{bmatrix}$$
+
+\end{sectionbox}
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/algo13_gauss_without_pivo.PNG}
+\textbf{Operation Count Algorithm $13$}: \#FLOPS=$\mathcal{O}(\frac{2m^3}{3})$
+
+\end{sectionbox}
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/algo14_solve_with_gauss.PNG}
+\textbf{Operation Count Algorithm $14$}: \#FLOPS=$\mathcal{O}(\frac{2m^3}{3} + 2n^2)$\\
+Worst case error for Gauss with LU is:\\
+$\mathcal{O}(\rho_{\text{worst-case}} \cdot \epsilon_\text{M})$ with $\rho_{\text{worst-case}} = 2^{m-1}$. Solving an equation system with QR does not have such problems.
+\end{sectionbox}
+\begin{sectionbox}
+\begin{sectionbox}
+\subsection{Stability of Gaussian Elimination}
+Without pivoting it holds that
+$$\tilde{\mathbf{L}}\tilde{\mathbf{U}} = \mathbf{A} + \Delta\mathbf{A}\quad \text{ with } \frac{\parallel \Delta \mathbf{A} \parallel}{\parallel\mathbf{L}\parallel\parallel\mathbf{U}\parallel} = \mathcal{O}(\epsilon_\text{M})$$
+\textbf{Gaussian elimination without pivoting is not backward stable!}
+\end{sectionbox}
+\subsection{Complete Pivoting}
+Leads to smallest coefficients for back substitution procedure. We have to compare $(m-k+1)^2$ elements in the $k$-th step. All entries in $\mathbf{L}$ below the diagonal are smaller than one.
+\begin{emphbox}
+	\large \textbf{Operation Count}: \#FLOPS=$\mathcal{O}(\frac{m^3}{3})$\\
+\end{emphbox}
+Full pivoting ensures that all off-diagonal elements of the resulting $\mathbf{U}$ are smaller than or equal to the diagonal entry in the same row. Thus complete pivoting also improves the properties of the second back substitution.
+\end{sectionbox}
+\begin{sectionbox}
+	\includegraphics[width=\textwidth]{img/algo15_gauss_partial_pivoting.PNG}
+	\textbf{Operation Count Algorithm $15$}: \#FLOPS=$\mathcal{O}(\frac{2m^3}{3} + \frac{m^2}{2})$\\
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Partial Pivoting}
+With partial pivoting we have
+$$\mathbf{\Pi}\mathbf{A} = \mathbf{L}\mathbf{U}$$
+For partial pivoting $m-k+1$ elements must be compared in step $k$
+\begin{emphbox}
+	\large \textbf{Operation Count}: \#FLOPS=$\mathcal{O}(\frac{m^2}{2})$\\
+\end{emphbox}
+The computational costs of partial pivoting compared to the LU factorization ($\mathcal{O}(\frac{2m^3}{3})$) are neglectable.
+\begin{emphbox}
+	\large Gaussian elimination with partial pivoting is potentially backward stable. With growth factor $\rho=\frac{\text{max}_{i,j}(|u_{i,j}|)}{\text{max}_{i,j} |a_{i,j}|}$
+\end{emphbox}
+With pivoting it holds:
+$\tilde{\mathbf{L}}\tilde{\mathbf{U}} = \mathbf{A} + \Delta\mathbf{A}\quad \text{ with } \frac{\parallel \Delta \mathbf{A} \parallel}{\parallel\mathbf{L}\parallel\parallel\mathbf{U}\parallel} = \mathcal{O}(\rho \epsilon_\text{M})$
+\end{sectionbox} 
+\begin{sectionbox}
+\subsection{Cholesky Factorization}
+A positive definite matrix $\mathbf{A}$ is Hermitian i.e. $\mathbf{A}^\text{H} = \mathbf{A}$
+All eigenvalues of a Hermitian $\mathbf{A}$ are real-valued. If $\mathbf{A}$ is not only Hermitian but positive definite, all eigenvalues are not only real-valued but also positive!
+$$\forall \mathbf{x}\in\mathbb{C}^{m}: \mathbf{x}^\text{H}\mathbf{A}\mathbf{x} > 0$$
+
+$$\mathbf{A} \succ 0$$
+
+\begin{emphbox}
+	\large For Cholesky the matrix $\mathbf{A}$ must be positive definite!\\ $\mathbf{A} \succ 0$
+\end{emphbox}
+\textbf{All diagonal elements of a positive definite matrix are greater than zero!}
+$$\mathbf{e}^\text{T}_k \mathbf{A}\mathbf{e}^\text{T}_k = [\mathbf{A}]_{k,k} > 0$$
+With the Cholesky factorization the root of matrix can be defined as
+$$\mathbf{A}^{1/2} = \mathbf{L}\mathbf{D}^{1/2}$$
+$$\mathbf{A} = \mathbf{A}^{1/2}\mathbf{A}^{\text{H}/2}$$
+
+\end{sectionbox}
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/algo16_cholesky.PNG}
+\textbf{Operation Count Algorithm $16$}: \#FLOPS=$\mathcal{O}(\frac{1}{3}m^3)$\\
+\#FLOP$_k = \sum_{j=k+1}^{m} 2m-2j+3 = \sum_{j'=1}^{m-k}2j'+1$\\
+$=(m-k)(m-k+1)+m-k\approx m^2-2mk+k^2$\\
+
+\#FLOPS$=\sum_{k=1}^{m-1}\text{\#FLOPS}_k = \sum_{k=1}^{m-1}m^2-2mk+k^2$\\
+$=(m-1)m^2-m^2(m-1)+\frac{(2m-1)m(m-1)}{6}$
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Stability of Cholesky Factorization}
+Contrary to Gaussian Elimination, the Cholesky factorization can be used without pivoting. If, however, the stability of the Cholesky factorization must be improved, pivoting can be employed.
+$$\mathbf{\Pi}\mathbf{A}\mathbf{\Pi}^\text{T} = \mathbf{L}\mathbf{D}\mathbf{L}^\text{H}$$
+\begin{emphbox}
+	\large Cholesky factorization, even without pivoting, can be shown to be backward stable
+\end{emphbox}
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Hessenberg-Form}
+A matrix whose elements below the first lower sub-diagonal are all zero is called \textbf{Hessenberg} matrix $\mathbf{H}$
+$$\mathbf{Q}^\text{H}\mathbf{A}\mathbf{Q} = \begin{bmatrix}
+\times & \times & \cdots & \times & \times \\
+\times & \times & \cdots & \times & \times \\
+0 & \times & \cdots & \times & \times \\
+\vdots & \ddots & \ddots & \vdots & \vdots \\
+0 & \cdots & 0 & \times & \times \\
+\end{bmatrix}$$
+
+The Hessenberg-Form can be achieved for a matrix $\mathbf{A}\in\mathbb{C}^{m\times m}$if we employ unitary reflection matrices $\mathbf{Q}_i$ with the resulting reflection matrix $\mathbf{Q}=\mathbf{Q}_1\cdots\mathbf{Q}_{m-2}$.
+$$\mathbf{Q} = \begin{bmatrix}
+\mathbf{I}_i & \mathbf{0}^\text{T}\\
+\mathbf{0} & \mathbf{F}_i
+\end{bmatrix} \in \mathbb{C}^{m\times m}$$
+With the Householder reflectors $\mathbf{F}_i\in\mathbb{C}^{m-i+1\times m-i+1}$ and\\
+$I_i\in\mathbb{C}^{i-1\times i-1}$\\
+
+For Hermitian $\mathbf{A}$, i.e. $\mathbf{A}^\text{H}=\mathbf{A}$ the result of the transformations leading to a Hessenberg matrix is a Hermitian Hessenberg matrix, that is, a tri-diagonal matrix.
+$$\mathbf{H} = \mathbf{Q}^\text{H} \mathbf{A}\mathbf{Q}=
+\begin{bmatrix}
+\times & \times & 0 & 0 & 0 &\cdots & 0 \\
+\times & \times & \times & 0 & 0 &\cdots & 0 \\
+0 & \times & \times & \times & 0 &\cdots & 0 \\
+\vdots & \ddots & \ddots & \ddots & \ddots & \ddots & \vdots \\
+0 & \cdots & 0 & \times & \times &\times & 0 \\
+0 & \cdots & 0 & 0 & \times &\times & \times \\
+0 & \cdots & 0 & 0 & 0 &\times & \times \\
+\end{bmatrix} = \mathbf{H}^\text{H}$$
+\end{sectionbox}
 % ======================================================================
 % End
 % ======================================================================

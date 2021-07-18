@@ -290,7 +290,10 @@ A similar discussion is possible for $\mathbf{C} = \mathbf{A}^H\mathbf{A}$:\\
 $\mathbf{C}=\mathbf{A}^H\mathbf{A} = \mathbf{V}_{red}\mathbf{\Sigma}_{red}\mathbf{V}^H_{red}$\\
 
 Both decompositions are like the (reduced) EVD.\\
-
+When computing the Gram matrix $\mathbf{A}^\text{H}\mathbf{A}$, every element is equal to the inner product of the two corresponding columns of $\mathbf{A}$. Let $\mathbf{a}_i$ denote the $i$-th column of $\mathbf{A}$. Then, the $i,j$-element of the Gram matrix can be written as
+$$[\mathbf{A}^\text{H}\mathbf{A}]_{ij} = \mathbf{a}_i^\text{H}\mathbf{a}_j$$\\
+Only the upper triangular part of $\mathbf{A}^\text{H}\mathbf{A}$ must be computed due to the Hermitian structure of $\mathbf{A}^\text{H}\mathbf{A}$. The lower triangular are simply the complex conjugate of the corresponding elements of the upper triangular.\\
+\textbf{Operation Count Gram Matrix}: \#FLOPS $=\mathcal{O}(mn^2)$
 \end{sectionbox}
 \begin{sectionbox}
 \subsection{Projectors}
@@ -574,12 +577,201 @@ r_{11} & r_{12} & \cdots r_{1n} \\
 \section{Least Squares}
 \begin{sectionbox}
 \subsection{Least Square for Full-Rank Matrix}
+$\mathbf{A}\mathbf{x} = \mathbf{b}$ with $\mathbf{A}\in\mathbb{C}^{m\times n}$ and $m\geq n$.  
+For tall $\mathbf{A}\in\mathbb{C}^{m\times n}$ with $m>$ no solution exists in general, except $b\in$range$(\mathbf{A})$.
+
+For a square and invertible $\mathbf{A}$ the solution
+
+The Least Square solution is given by the normal equation:
+$$\mathbf{A}^H\mathbf{A}\mathbf{x}_{\text{LS}} = \mathbf{A}^H\mathbf{b}$$
+$$\mathbf{x}_{\text{LS}} = (\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\mathbf{b}$$
+The pseudoinverse of $\mathbf{A}$: \quad $\mathbf{A}^\dagger = (\mathbf{A}^H\mathbf{A})^{-1}\mathbf{A}^H\mathbf{b}$
+
+\subsection{Least Square with Cholesky}
+We need to compute the Gram matrix: $\mathbf{A}^\text{H}\mathbf{A} = \mathbf{L}\mathbf{D}\mathbf{L}^\text{H}$.
+
+$$\mathbf{L}\mathbf{D}\mathbf{L}^\text{H} \mathbf{x}_{\text{LS}} = \mathbf{A}^\text{H}\mathbf{b}$$
+
+Due to $\mathbf{L}$ being lower triangular we need two times backsubstitution.
+
+The condition number with Cholesky increases because if we compute the Gram matrix it holds:
+$$\kappa (\mathbf{A}^H\mathbf{A}) = \kappa^2 (\mathbf{A})$$
+The condition number of the Gram matrix of $\mathbf{A}$ is the square of the original condition number $\kappa$.
 
 \end{sectionbox}
 \begin{sectionbox}
-	\subsection{Rank-Deficient Least Square}
-	
+\subsection{Least Square with QR}
+Using the decomposition $\mathbf{A} = \mathbf{Q}_{\text{red}}\mathbf{R}_{\text{red}}$
+We obtain the solution
+$$\mathbf{A}^\dagger = \mathbf{R}^{-1}_{\text{red}}\mathbf{Q}^\text{H}_{\text{red}}$$
+$$\mathbf{x}_{\text{LS}}=\mathbf{A}^\dagger \mathbf{b}$$
+Where $\mathbf{R}^{-1}_{\text{red}}$ describes a backsubstitution.
+Therefore we need to compute $\mathbf{Q}^\text{H}\mathbf{b}$ and then employ a backsubstitution on this result.
+QR decomposition and Cholesky have the same order of complexity if $m=n$.
 \end{sectionbox}
+
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/algo10_ls_with_cholesky.PNG}\\
+\textbf{Operation Count Algorithm $10$}: \#FLOPS $=\mathcal{O}(mn^2+\frac{1}{3}n^3)$\\
+Computing the Gram matrix and Cholesky factorization is dominant. In total we have:
+$\mathcal{O}(mn^2 + 2mn + \frac{1}{3}n^3 + 2n^2+n)$
+\end{sectionbox}
+
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/algo11_ls_with_QR.PNG}\\
+\textbf{Operation Count Algorithm $11$}: \#FLOPS $=\mathcal{O}(2mn^2-\frac{2}{3}n^3)$\\
+The complexity analysis assumes that we used Householder QR decomposition.
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Least Squares with SVD}
+We decompose $\mathbf{A}\in\mathbb{C}^{m\times n}$ as follows
+$$\mathbf{A}=\mathbf{U}_{\text{red}}\mathbf{\Sigma}_{\text{red}}\mathbf{V}^\text{H}$$
+with sub-unitary $\mathbf{U}_{\text{red}}\in\mathbb{C}^{m\times n}$, diagonal $\mathbf{\Sigma}_{\text{red}} \in\mathbb{C}^{n\times n}$ and unitary $\mathbf{V} \in\mathbb{C}^{n\times n}$. The pseudoinverse of $\mathbf{A}$ can be written as
+$$\mathbf{A}^\dagger = \mathbf{V}\mathbf{\Sigma}^{-1}_{\text{red}}\mathbf{U}^\text{H}_{\text{red}}$$
+Thus the solution can be expressed as
+$$\mathbf{x}_{\text{LS}} = \mathbf{V}\mathbf{\Sigma}^{-1}_{\text{red}}\mathbf{U}^\text{H}_{\text{red}}\mathbf{b}$$
+
+\end{sectionbox}
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/algo12_ls_with_SVD.PNG}\\
+\textbf{Operation Count Algorithm $12$}: \#FLOPS=$\mathcal{O}(2mn^2+11n^3)$
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Comparsion of Different Approaches}
+\begin{emphbox}
+	\large \#FLOPS$_{\text{Cholesky}} \leq$\#FLOPS$_{\text{QR-Householder}}\leq$\#FLOPS$_{\text{SVD}}$
+\end{emphbox}
+The left inequality becomes and equality for $m=n$ and the right inequality is approximately an equality for $m\gg n$.\\
+For numerical stability, the order is the same
+\begin{emphbox}
+	\large stability$_{\text{Cholesky}} \leq$ stability$_{\text{QR-Householder}}\leq$ stability$_{\text{SVD}}$
+\end{emphbox}
+Due to the \textbf{explicit computation of the Gram matrix} $\mathbf{A}^\text{H}\mathbf{A}$ in the Cholesky factorization based approach the condition of the problem is deteriorated considerably.\\
+QR decomposition does no perform this step. However, the \textbf{back substitution} is disadvantageous compared to the \textbf{simple scaling} and the multiplication by the unitary $\mathbf{V}$ in the SVD approach.
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Rank-Deficient Least Square}
+The SVD of rank-deficient $A$ is given by
+$$\mathbf{A} = \mathbf{U}_{\text{red}}\mathbf{\Sigma}_{\text{red}}\mathbf{V}^\text{H}_{\text{red}}$$
+with $\mathbf{U}_{\text{red}}\in\mathbb{C}^{m\times r}$, $\mathbf{\Sigma}_{\text{red}}\in\mathbb{C}^{r \times r}$ which is diagonal with positive diagonal elements, sub unitary $\mathbf{V}_{\text{red}} \in \mathbb{C}^{n \times r}$ and $r=$rank$(\mathbf{A})$.
+\end{sectionbox}
+\begin{sectionbox}
+$$\mathbf{\Sigma}^2_{\text{red}}\mathbf{V}^\text{H}_{\text{red}}\mathbf{x} = \mathbf{\Sigma}_{\text{red}}\mathbf{U}^\text{H}_{\text{red}}$$
+
+The equation is underdetermined with more unknowns $n$ than equations $r$. There fore infinitely many solutions for $\mathbf{x}$ exist. We rewrite the equation with
+
+$$\mathbf{x}_{\text{LS}} =\text{argmin}_\mathbf{x} \parallel \mathbf{x}\parallel^2_2 \quad \text{s.t.} \mathbf{\Sigma}_{\text{red}}\mathbf{V}^H_{\text{red}}\mathbf{x} = \mathbf{U}^\text{H}_{\text{red}}\mathbf{b}$$
+
+For rank-deficient LS we obtain the solution:
+$$\mathbf{x}_{\text{LS}}=\mathbf{V}_{\text{red}}\mathbf{\Sigma}^{-1}_{\text{red}}\mathbf{U}_{\text{red}}\mathbf{b}$$
+
+The residual is given by $$\mathbf{r} = (\mathbf{I} - \mathbf{U}_{\text{red}}\mathbf{U}_{\text{red}}^\text{H})\mathbf{b}$$
+that is, the residual of the rank-deficient LS problem is equal to the part of the right-hand side $\mathbf{b}$ lying in the orthogonal complment of range$(\mathbf{U}_{\text{red}})$ = range$(\mathbf{A})$.
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Moore-Penrose Pseudoinverse}
+The generalization for all LS problems is given by the Moore-Penrose pseudoinverse with $\mathbf{\Sigma}^\dagger = [\Sigma^\dagger_1, \mathbf{0}]$ we can rewrite $\mathbf{A}^\dagger$ as
+
+$$\mathbf{A}^\dagger = \mathbf{V}[\text{diag}(\frac{1}{\sigma_1}, \cdots, \frac{1}{\sigma_r}, 0, \cdots,0),\mathbf{0}]\mathbf{U}^\text{H}$$
+
+When $\mathbf{A}$ is full-rank and square $\mathbf{A}^\dagger = \mathbf{A}^{-1}$\\
+For full-rank and tall $\mathbf{A}\in\mathbb{C}^{m\times n}$, $m > n$: $\mathbf{A}^\dagger = (\mathbf{A}^\text{H}\mathbf{A})^{-1}\mathbf{A}^\text{H}$\\
+For full-rank and wide matrix $\mathbf{A} \in\mathbb{C}^{m\times n}$, $m < n$:\\
+$\mathbf{A}^\dagger = \mathbf{A}^H(\mathbf{A}\mathbf{A}^\text{H})^{-1}$
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Rank-Revealing QR Decomposition}
+The application of the rank-revealing QR decomposition of $\mathbf{A}\in\mathbb{C}^{m\times n}$ with $m\geq n$ gives
+$$\mathbf{A}\mathbf{\Pi} = \mathbf{Q}_\text{red} \mathbf{R}_\text{red}$$
+where $\mathbf{Q}_\text{red}\in\mathbb{C}^{m\times n}$ is sub unitary and
+
+$$\mathbf{R}_\text{red} = \begin{bmatrix}
+\mathbf{R}_{11} & \mathbf{R}_{12}\\
+\mathbf{0} & \mathbf{0}
+\end{bmatrix}\in\mathbb{C}^{n\times n}$$
+The partition $\mathbf{R}_{11}\in \mathbb{C}^{r\times r}$ is upper-triangular and full-rank with $r$=rank$(\mathbf{A})$\\
+In every step the \textbf{column} whose lower part, that has not yet been brought to triangular form and \textbf{exhibits maximum norm} in the current step is \textbf{permuted} to the first column of the part that has not yet been transformed to triangular form.
+\end{sectionbox}
+\section{Condition of a Problem}
+\begin{sectionbox}
+\subsection{Norm-Wise Condition Number}
+In abstract form, when solving a problem e.g., solving an equation system, the following map must be applied
+$$\mathbf{f}:\mathbb{C}^m \to \mathbb{C}^n; \mathbf{x}\to\mathbf{y}=\mathbf{f}(\mathbf{x})$$
+A prominent example for such a problem is solving an equation system of the form
+$$\mathbf{A}\mathbf{v} = \mathbf{b}$$
+Interpreting the matrix $\mathbf{A}$ constituting the equation system as parameter of the problem, the problem to be solved is:
+$$\mathbf{f}:\mathbb{C}^m \to \mathbb{C}^n; \mathbf{b}\to\mathbf{v}=\mathbf{f}(\mathbf{b})$$
+Note that a different $\mathbf{A}_2$ leads to a different problem $\mathbf{f}_2$.
+\end{sectionbox}
+
+\begin{sectionbox}
+The norm-wise condition number is given by:
+
+$$\kappa_\text{N}(\mathbf{f}, \mathbf{x}) = \frac{\parallel \mathbf{J}(\mathbf{x})\parallel \cdot \parallel \mathbf{x} \parallel}{\parallel \mathbf{f}(\mathbf{x})\parallel}$$
+
+where
+$$\mathbf{J}(\mathbf{x}) = \frac{\partial \mathbf{f}(\mathbf{x})}{\partial\mathbf{x}^T}$$
+
+The perturbed outcome of the problem $\mathbf{f}$ can be bouned as follows
+$$\frac{\parallel \mathbf{f}(\mathbf{x}+\Delta \mathbf{x}) - \mathbf{f}(\mathbf{x})\parallel}{\parallel \mathbf{f}(\mathbf{x})\parallel} \leq \kappa_\text{N}(\mathbf{f}, \mathbf{x}) \frac{\parallel\Delta \mathbf{x} \parallel}{\parallel \mathbf{x}\parallel} + o(\parallel \Delta \mathbf{x} \parallel)$$
+\begin{itemize}
+\item \textbf{well-conditioned}: If $\kappa_\text{N}(\mathbf{f}, \mathbf{x}) \approx 1$, (e.g., $1$,$100$). For a well-conditioned problem, it is possible fo find algorithms with small errors.
+\item \textbf{ill-conditioned}: If $\kappa_\text{N}(\mathbf{f}, \mathbf{x}) \gg 1$, (e.g., $10^6$, $10^10$). When the problem is ill-conditioned, large errors must be expected from all algorithms.
+\item \textbf{ill-posed}: If $\kappa_\text{N}(\mathbf{f}, \mathbf{x}) = \infty$. In this case, the solution $\mathbf{f}(\mathbf{x})$ either does not exist or is not unique. It can be expected that no algorithm is able so give a reasonable result.
+\end{itemize}
+\end{sectionbox}
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/conditions_graphics.PNG}
+\end{sectionbox}
+\begin{sectionbox}
+\begin{tablebox}{@{\hspace{0mm}}l@{\extracolsep\fill}|l@{\extracolsep\fill}|l@{\extracolsep\fill}}
+	$f(x)$ & $J(x)$ & $\kappa_\text{N}$ \\ \cmrule
+	$f(x) = \sqrt{x}$ & $J(x) = \frac{d\sqrt{x}}{dx} = \frac{1}{2}\frac{1}{\sqrt{x}}$ & $\kappa_\text{N} = \frac{1}{2}$\\
+	$f(x) = ax$ & $J(x)=a$& $\kappa_\text{N}=\frac{|a||x|}{|ax|}=1$\\
+	$f(\begin{bmatrix}
+		x_1\\
+		x_2
+	\end{bmatrix})=x_1 \cdot x_2$ & $J(\mathbf{x}) = [x_2, x_1] $ & $\kappa_\text{N} = \left|\frac{x_1}{x_2}\right| + \left|\frac{x_2}{x_1}\right|$
+\end{tablebox}
+\end{sectionbox}
+
+\begin{sectionbox}
+\subsection{Component-wise Condition Number}
+The component-wise condition number is defined by
+$$\kappa_\text{C}(f,\mathbf{x}) = \frac{\parallel\mathbf{J}(\mathbf{x})\odot\mathbf{x}^\text{T}\parallel_\infty}{|f(\mathbf{x})|}$$
+$$=\frac{|\mathbf{J^\text{T}(\mathbf{x})}||\mathbf{x}| }{|f(\mathbf{x})| }$$
+
+the product $|\mathbf{J^\text{T}(\mathbf{x})}||\mathbf{x}|$ is performed  element wise.\\
+
+The component-wise condition number is smaller than the norm-wise condition number if the infinity norm is employed. For $f:\mathbb{R}^m \to \mathbb{R}$ and when applying the infinity norm, the norm wise condition number is given by
+$$\kappa_\text{N}(\mathbf{f}, \mathbf{x}) = \frac{\parallel \mathbf{J}(\mathbf{x})\parallel_\infty \cdot \parallel \mathbf{x} \parallel_\infty}{| \mathbf{f}(\mathbf{x})|}$$
+
+as $f(\mathbf{x})$ is assumed to be scalar. Because $\mathbf{J}^\text{T}(\mathbf{x})\in\mathbb{R}^{1\times m}$ is a row vector for scalar $f(\mathbf{x})$, $\parallel\mathbf{J}^\text{T}(\mathbf{x})\parallel_\infty = \parallel \mathbf{J}(\mathbf{x})\parallel_1 = \sum_{i=1}^{m} \left|[\mathbf{J}(\mathbf{x})]_i\right|$ holds, and due to $\parallel \mathbf{x}\parallel_\infty = $max$_{i\in\{1,\cdots,m\}}|x_i|$\\
+
+$$\kappa_\text{N}(f,\mathbf{x}) \geq \frac{|\mathbf{J}^\text{T}(\mathbf{x})|\cdot |\mathbf{x}|}{\left|f(\mathbf{x})\right|}=\kappa_\text{C}(f,\mathbf{x})$$
+
+\end{sectionbox}
+\begin{sectionbox}
+\includegraphics[width=\textwidth]{img/kc_operations.PNG}
+\end{sectionbox}
+\begin{sectionbox}
+\subsection{Condition of a Matrix}
+We can express the condition number of matrix $\mathbf{A}\in\mathbb{C}^{m \times n}$ with the help of the pseudoinverse $\mathbf{A}^\dagger$ as 
+$$\kappa(\mathbf{A}) = \parallel\mathbf{A}\parallel\cdot\parallel \mathbf{A}^\dagger\parallel$$
+
+When we employ the $2$-norm we get the result
+$$\kappa_2(\mathbf{A}) = \parallel\mathbf{A}\parallel\cdot\parallel \mathbf{A}^\dagger\parallel = \frac{\sigma_1}{\sigma_n}$$
+
+\textbf{Wide Matrix}
+For a wide matrix we divide the vector $\mathbf{x}$ into a component $\mathbf{x}^\perp_\mathbf{A}$ in the nullspace of $\mathbf{A}$ and a component $\mathbf{x}_\mathbf{A}$ perpendicular to the nullspace of $\mathbf{A}$ by employing the project $\mathbf{P}_\mathbf{A}$ onto the range of $\mathbf{A}^\text{H}$, that is, $\mathbf{x}^\perp_\mathbf{A} = \mathbf{P}^\perp_\mathbf{A}\mathbf{x}$ and $\mathbf{x}_\mathbf{A} = \mathbf{P}_\mathbf{A}\mathbf{x}$, respectively, such that $\mathbf{x}^\text{H}_\mathbf{A}\mathbf{x}_\mathbf{A} = 0$. Substituting into $\kappa_\text{N}$ results in
+
+$$\kappa_\text{N}(\mathbf{A}\mathbf{x}, \mathbf{x}) = \frac{\parallel\mathbf{A}\parallel\cdot\parallel\mathbf{x}_\mathbf{A} + \mathbf{x}^\perp_\mathbf{A}\parallel}{\parallel\mathbf{A}\mathbf{x}_\mathbf{A}\parallel}$$
+
+\subsubsection{Condition of Unitary Matrix}
+$$\kappa(\mathbf{U}) = \parallel\mathbf{U}\parallel\cdot\parallel \mathbf{U}^\text{H}\parallel = 1$$
+\end{sectionbox}
+\section{Stability of an Algorithm}
+
 % ======================================================================
 % End
 % ======================================================================

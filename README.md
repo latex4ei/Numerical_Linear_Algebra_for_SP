@@ -1,7 +1,6 @@
-# Statistical Signal Processing
+# Numerical Linear Algebra for Signal Processing
 
-[![Build Status](https://travis-ci.org/latex4ei/Statistical-Signal-Processing.svg?branch=master)](https://travis-ci.org/latex4ei/Statistical-Signal-Processing)
-[![Join the chat at https://gitter.im/LaTeX4Ei/Lobby](https://badges.gitter.im/LaTeX4Ei/Lobby.svg)](https://gitter.im/LaTeX4Ei/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Formelsammlung für NLASP
 
 ## Formelsammlung für Latex4ei
 **Required custom Package on GitHub:** [LaTeX4Ei](https://github.com/latex4ei/latex4ei-packages)

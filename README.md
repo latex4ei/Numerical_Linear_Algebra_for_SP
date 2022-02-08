@@ -1,5 +1,5 @@
 # Numerical Linear Algebra for Signal Processing
-[![Actions Status](https://github.com/latex4ei/CheatsheetTemplate/workflows/CI/badge.svg)](https://github.com/latex4ei/Numerical_Linear_Algebra_for_SP)
+[![CI](https://github.com/latex4ei/Numerical_Linear_Algebra_for_SP/actions/workflows/ci.yml/badge.svg?branch=master)]
 [![Join the chat at https://gitter.im/LaTeX4Ei/Lobby](https://badges.gitter.im/LaTeX4Ei/Lobby.svg)](https://gitter.im/LaTeX4Ei/Lobby?)
 
 Formelsammlung für NLASP
